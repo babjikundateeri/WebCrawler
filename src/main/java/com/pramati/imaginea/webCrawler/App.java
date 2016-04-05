@@ -1,4 +1,4 @@
-package com.pramati.imaginea.webCrawler.WebCrawler;
+package com.pramati.imaginea.webCrawler;
 
 /**
  * Hello world!
