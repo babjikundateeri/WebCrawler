@@ -7,6 +7,7 @@ public class MailArchiveDTO {
 	private String date;
 	private String fileName;
 	private String dir;
+	private String uRL;
 	public String getLink() {
 		return link;
 	}
@@ -43,10 +44,16 @@ public class MailArchiveDTO {
 	public void setDir(String dir) {
 		this.dir = dir;
 	}
+	public String getURL() {
+		return uRL;
+	}
+	public void setURL(String uRL) {
+		this.uRL = uRL;
+	}
 	@Override
 	public String toString() {
 		return "MailArchiveDTO [link=" + link + ", author=" + author + ", subject=" + subject + ", date=" + date
-				+ ", fileName=" + fileName + ", dir=" + dir + "]";
+				+ ", fileName=" + fileName + ", dir=" + dir + ", baseURL=" + baseURL + "]";
 	}
 	
 }

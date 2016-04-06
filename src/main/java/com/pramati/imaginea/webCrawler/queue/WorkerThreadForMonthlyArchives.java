@@ -2,8 +2,6 @@ package com.pramati.imaginea.webCrawler.queue;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -31,7 +29,6 @@ public class WorkerThreadForMonthlyArchives implements Callable<MailArchivesMont
 	private MailArchivesMonthlyDTO monthlyDTO;
 	
 	public WorkerThreadForMonthlyArchives (MailArchivesMonthlyDTO monthlyDTO) {
-		Thread.currentThread().setName(monthlyDTO.getId());
 		this.monthlyDTO = monthlyDTO;
 	}
 	
@@ -60,7 +57,7 @@ public class WorkerThreadForMonthlyArchives implements Callable<MailArchivesMont
 			// have different pages
 			String primaryURL =  WebCrawlerProperties.getMailArchiveURL() + File.separator + monthlyDTO.getLink();
 			
-			int numberOfPages = (monthlyDTO.getMsgCount() / WebCrawlerProperties.getMailsPerPage() ) + 1;
+			int numberOfPages = (monthlyDTO.getMsgCount() / WebCrawlerProperties.getMailsPerPage() );
 			
 			int pageNumber = 0;
 			while (pageNumber <= numberOfPages) {
@@ -108,8 +105,22 @@ public class WorkerThreadForMonthlyArchives implements Callable<MailArchivesMont
 										LOGGER.debug(monthlyDTO.getId() + " " + tdAttribute.getNodeValue() );
 										if (tdAttribute.getNodeValue().equalsIgnoreCase(WebCrawlerConstants.AUTHOR)) { // author
 											dto.setAuthor(tdNode.getTextContent());
-										} else if (tdAttribute.getNodeValue().equalsIgnoreCase(WebCrawlerConstants.SUBJECT)) {  // subject
+										} else if (tdAttribute.getNodeValue().equalsIgnoreCase(WebCrawlerConstants.SUBJECT)
+												 && tdNode.hasChildNodes()) {  // subject
+											NodeList aNodesList = tdNode.getChildNodes();
 											
+											for (int aNodeCtr = 0; aNodeCtr < aNodesList.getLength(); aNodeCtr++) {
+												Node aNode = aNodesList.item(aNodeCtr);
+												
+												if (aNode.getNodeType() != Node.ELEMENT_NODE || !aNode.getNodeName().equalsIgnoreCase(WebCrawlerConstants.A)) continue;
+												
+												NamedNodeMap aAttributes = aNode.getAttributes();
+												Node hrefNode = aAttributes.getNamedItem(WebCrawlerConstants.HREF);
+												
+												if (hrefNode.getNodeType() != Node.ATTRIBUTE_NODE) continue;
+												dto.setLink(hrefNode.getNodeValue());
+												dto.setURL(primaryURL + WebCrawlerConstants.SLASH + WebCrawlerConstants.AJAX + WebCrawlerConstants.SLASH + hrefNode.getNodeValue());
+											}
 										} else if (tdAttribute.getNodeValue().equalsIgnoreCase(WebCrawlerConstants.DATE)) { // date
 											dto.setDate(tdNode.getTextContent());
 											dto.setFileName(tdNode.getTextContent() + WebCrawlerProperties.getFileExtension());

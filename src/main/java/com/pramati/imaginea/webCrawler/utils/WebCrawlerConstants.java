@@ -5,7 +5,10 @@ public class WebCrawlerConstants {
 	public static final String DATE = "date";
 	public static final String TBODY = "tbody";
 	public static final String THEAD = "thead";
+	public static final String A = "a";
+	public static final String HREF = "href";
 	public static final String LINKS = "links";
+	public static final String AJAX = "ajax";
 	public static final String GRID = "grid";
 	public static final String MSG_COUNT = "msgcount";
 	public static final String SPACE = " ";

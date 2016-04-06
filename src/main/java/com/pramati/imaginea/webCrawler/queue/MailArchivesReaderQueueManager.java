@@ -2,8 +2,11 @@ package com.pramati.imaginea.webCrawler.queue;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.pramati.imaginea.webCrawler.dto.MailArchiveDTO;
+import com.pramati.imaginea.webCrawler.utils.WebCrawlerProperties;
 
 public class MailArchivesReaderQueueManager {
 	private static MailArchivesReaderQueueManager me;
@@ -39,6 +42,7 @@ public class MailArchivesReaderQueueManager {
 	public void initQueue() {
 		if (!isQueueStarted) {
 			isQueueStarted = true;
+			ExecutorService service = Executors.newFixedThreadPool(WebCrawlerProperties.getThreadPoolSize());
 		}
 	}
 }
