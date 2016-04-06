@@ -9,12 +9,16 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.pramati.imaginea.webCrawler.dto.MailArchivesMonthlyDTO;
 import com.pramati.imaginea.webCrawler.exceptions.WebCrawlerRunnerException;
+import com.pramati.imaginea.webCrawler.queue.WebCrawlerQueueManager;
 import com.pramati.imaginea.webCrawler.utils.URLConnectionReader;
+import com.pramati.imaginea.webCrawler.utils.WebCrawlerConstants;
 import com.pramati.imaginea.webCrawler.utils.WebCrawlerProperties;
 
 public class WebCrawlerRunner {
@@ -71,9 +75,10 @@ public class WebCrawlerRunner {
 					for (int j = 0; j < gridTableTDNodes.getLength(); j++) {
 						Node gridTDNode = gridTableTDNodes.item(j);
 						
-						if (gridTDNode.getNodeType() == Node.ELEMENT_NODE) {
-							LOGGER.debug("Node Name " + gridTDNode.getNodeName());
-							//LOGGER.debug("" + gridTDNode.getTextContent());
+						if (gridTDNode.getNodeType() == Node.ELEMENT_NODE 
+								&& gridTDNode.getTextContent().contains(WebCrawlerProperties.getYear())
+								&& gridTDNode.hasChildNodes()) {
+							parseTable(gridTDNode);
 						}
 					}
 				}
@@ -85,6 +90,68 @@ public class WebCrawlerRunner {
 			LOGGER.warn(e.getMessage());
 		} catch (IOException e) {
 			LOGGER.warn(e.getMessage());
+		}
+	}
+	
+	private void parseTable(Node tableNode) {
+		
+		NodeList tableChilds = tableNode.getChildNodes();
+		for (int i = 0; i < tableChilds.getLength(); i++) {
+			Node tableChildNode = tableChilds.item(i);
+			
+			if (tableChildNode.getNodeType() == Node.ELEMENT_NODE 
+					&& tableChildNode.getNodeName().equalsIgnoreCase(WebCrawlerConstants.TBODY)
+					&& tableChildNode.hasChildNodes()) {
+				
+				NodeList trNodeList = tableChildNode.getChildNodes();
+				
+				for (int trctr = 0; trctr < trNodeList.getLength(); trctr++) {
+					Node trNode = trNodeList.item(trctr);
+					if (trNode.getNodeType() == Node.ELEMENT_NODE 
+							&& trNode.hasChildNodes()) {
+						MailArchivesMonthlyDTO dto = new MailArchivesMonthlyDTO();
+						
+						NodeList tdNodeList = trNode.getChildNodes();
+						for (int tdctr = 0; tdctr < tdNodeList.getLength(); tdctr++) {
+							Node tdNode = tdNodeList.item(tdctr);
+							if (tdNode.getNodeType() == Node.ELEMENT_NODE) {
+								NamedNodeMap tdNamedNodeMap = tdNode.getAttributes();
+								Node classNode = tdNamedNodeMap.getNamedItem(WebCrawlerConstants.CLASS);
+								
+								if (classNode.getNodeValue().equalsIgnoreCase(WebCrawlerConstants.DATE)) {  // date
+									String monthWithYear = tdNode.getTextContent();
+									String monthWithYearsplit[] = monthWithYear.split(WebCrawlerConstants.SPACE);
+									dto.setMonth(monthWithYearsplit[0]);
+									dto.setYear(monthWithYearsplit[1]);
+								} else if (classNode.getNodeValue().equalsIgnoreCase(WebCrawlerConstants.LINKS)
+										&& tdNode.hasChildNodes()) { // links
+									NodeList tdChilds = tdNode.getChildNodes();
+									for (int tdChildctr = 0 ; tdChildctr < tdChilds.getLength(); tdChildctr++) {
+										Node tdChildNode = tdChilds.item(tdChildctr);
+										if (tdChildNode.getNodeType() == Node.ELEMENT_NODE && tdChildNode.getNodeName().equalsIgnoreCase(WebCrawlerConstants.SPAN)){
+											NamedNodeMap tdAttributes = tdChildNode.getAttributes();
+											Node idNode = tdAttributes.getNamedItem(WebCrawlerConstants.ID);
+											if (idNode != null && idNode.getNodeType() == Node.ATTRIBUTE_NODE) {
+												dto.setId(idNode.getNodeValue());
+												dto.setLink(dto.getId() + WebCrawlerConstants.MBOX + WebCrawlerConstants.SLASH + WebCrawlerConstants.DATE);
+											}
+										}
+									}
+								} else if (classNode.getNodeValue().equalsIgnoreCase(WebCrawlerConstants.MSG_COUNT)) { // message count
+									try {
+										dto.setMsgCount(Integer.parseInt(tdNode.getTextContent()));
+									} catch (NumberFormatException e) {
+										LOGGER.warn(e.getMessage());
+									}
+								}
+							}
+						}
+						LOGGER.debug(dto);
+						WebCrawlerQueueManager.getInstance().addMailArchivesMonthlyDTO(dto);
+					}
+					
+				}
+			}
 		}
 	}
 }
