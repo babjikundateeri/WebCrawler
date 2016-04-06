@@ -34,6 +34,9 @@ public class WebCrawlerRunner {
 			}
 		}
 		
+		if (input.length > 1) { //added month in options
+			WebCrawlerProperties.setMonth(input[1]);
+		}
 		
 	}
 	public void runWebCrawler() {
@@ -49,7 +52,7 @@ public class WebCrawlerRunner {
 			document = builder.parse(urlConnectionReader.getInputStream());
 			LOGGER.debug("Got the Document element");
 			
-			Element gridElement = document.getElementById("grid");
+			Element gridElement = document.getElementById(WebCrawlerConstants.GRID);
 			
 			if (gridElement == null) {
 				LOGGER.warn("element with id grid is missing in html");
@@ -146,12 +149,16 @@ public class WebCrawlerRunner {
 								}
 							}
 						}
-						LOGGER.debug(dto);
-						WebCrawlerQueueManager.getInstance().addMailArchivesMonthlyDTO(dto);
+						if (WebCrawlerProperties.getMonth() == null ||
+								WebCrawlerProperties.getMonth().equalsIgnoreCase(dto.getMonth())) {
+							LOGGER.debug(dto);
+							WebCrawlerQueueManager.getInstance().addMailArchivesMonthlyDTO(dto);
+						}
 					}
 					
 				}
 			}
 		}
+		WebCrawlerQueueManager.getInstance().initQueue();
 	}
 }
