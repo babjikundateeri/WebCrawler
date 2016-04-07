@@ -25,7 +25,7 @@ public class URLConnectionReader {
 			LOGGER.warn("Unable to Connect to " + urlStr, e);
 			e.printStackTrace();
 		}
-		LOGGER.info("Connection done for " + urlStr);
+		LOGGER.debug("Connection done for " + urlStr);
 		
 	}
 	

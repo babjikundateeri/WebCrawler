@@ -38,9 +38,14 @@ public class WebCrawlerRunner {
 			WebCrawlerProperties.setMonth(input[1]);
 		}
 		
+		if (input.length > 2) { // adding archives folder name in options
+			WebCrawlerProperties.setQueryURL(input[2]);
+		}
 	}
 	public void runWebCrawler() {
 		LOGGER.info("Running Crawler for the year " + WebCrawlerProperties.getYear());
+		LOGGER.info("Running Crawler for the Months " + WebCrawlerProperties.getMonth());
+		LOGGER.info("Reading Archives for " + WebCrawlerProperties.getQeueryURL());
 		URLConnectionReader urlConnectionReader = new URLConnectionReader(WebCrawlerProperties.getMailArchiveURL());
 
 		Document document = null;
@@ -150,7 +155,8 @@ public class WebCrawlerRunner {
 							}
 						}
 						if (WebCrawlerProperties.getMonth() == null ||
-								WebCrawlerProperties.getMonth().equalsIgnoreCase(dto.getMonth())) {
+								WebCrawlerProperties.getMonth().equalsIgnoreCase(WebCrawlerConstants.ALL) || 
+								WebCrawlerProperties.getMonth().toUpperCase().contains(dto.getMonth().toUpperCase())) {
 							LOGGER.debug(dto);
 							WebCrawlerQueueManager.getInstance().addMailArchivesMonthlyDTO(dto);
 						}

@@ -6,6 +6,7 @@ public class WebCrawlerConstants {
 	public static final String TBODY = "tbody";
 	public static final String THEAD = "thead";
 	public static final String A = "a";
+	public static final String ALL = "all";
 	public static final String HREF = "href";
 	public static final String LINKS = "links";
 	public static final String AJAX = "ajax";

@@ -5,7 +5,7 @@ import java.io.File;
 public class WebCrawlerProperties {
 	
 	private static String YEAR = "2016";
-	private static String MONTH = null;
+	private static String MONTH = "all";
 	private static String BASE_URL = "http://mail-archives.apache.org/mod_mbox";
 	private static String QUERY_URL = "maven-users";
 	private static String CURRENT_DIR = System.getProperty("user.dir");
@@ -21,6 +21,10 @@ public class WebCrawlerProperties {
 	
 	public static String getQeueryURL() {
 		return QUERY_URL;
+	}
+	
+	public static void setQueryURL(final String queryString) {
+		QUERY_URL = queryString;
 	}
 	
 	public static String getBaseURL() {
