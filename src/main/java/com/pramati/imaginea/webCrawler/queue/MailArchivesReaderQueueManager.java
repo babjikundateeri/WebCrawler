@@ -12,7 +12,9 @@ public class MailArchivesReaderQueueManager {
 	private static MailArchivesReaderQueueManager me;
 	private volatile Queue<MailArchiveDTO> queue = null;
 	private volatile boolean isQueueStarted = false;
-	private volatile int runningThreadCount = 0;
+	private volatile int inQueueCtr = 0;
+	private volatile int outQueueCtr = 0;
+	private volatile int outSkipCount = 0;
 	private MailArchivesReaderQueueManager() {
 		queue = new LinkedList<MailArchiveDTO>();
 	}
@@ -29,6 +31,7 @@ public class MailArchivesReaderQueueManager {
 	}
 	
 	public boolean addQueueEntry(final MailArchiveDTO mailArchiveDTO) {
+		inQueueCtr++;
 		return queue.add(mailArchiveDTO);
 	}
 	
@@ -40,12 +43,19 @@ public class MailArchivesReaderQueueManager {
 		return null;
 	}
 	
+	public void increseOutQueueCtr(final boolean isSkipp) {
+		if (isSkipp)
+			outSkipCount++;
+		else
+			outQueueCtr++;
+	}
 	public void initQueue() {
 		if (!isQueueStarted) {
 			isQueueStarted = true;
 			ExecutorService service = Executors.newFixedThreadPool(WebCrawlerProperties.getThreadPoolSize());
 			int emptyQeueRunTimes = 0;
 			while (true) {
+				System.out.print("\r Queue Status - In [" + inQueueCtr + "] / Processed [" + outQueueCtr + "] / Skipped [" + outSkipCount + "]  ");
 				MailArchiveDTO archiveDTO = null;
 				if ( (archiveDTO = pollEntryFromQueue()) != null ) {
 					WorkerForMailArchiveReader worker = new WorkerForMailArchiveReader(archiveDTO);

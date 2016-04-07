@@ -55,6 +55,7 @@ public class WorkerThreadForMonthlyArchives implements Callable<MailArchivesMont
 		LOGGER.info(monthlyDTO.getId() + "  Mails in local / Mails in Server  :: " + noOfPriviousFiles + " / " + monthlyDTO.getMsgCount());
 		if (noOfPriviousFiles < monthlyDTO.getMsgCount()) {
 			// have different pages
+			LOGGER.info(monthlyDTO.getId() + " is going forward");
 			String primaryURL =  WebCrawlerProperties.getMailArchiveURL() + File.separator + monthlyDTO.getLink();
 			
 			int numberOfPages = (monthlyDTO.getMsgCount() / WebCrawlerProperties.getMailsPerPage() );
@@ -148,6 +149,8 @@ public class WorkerThreadForMonthlyArchives implements Callable<MailArchivesMont
 					LOGGER.warn(e.getMessage());
 				}
 			} 
+		} else {
+			LOGGER.info(monthlyDTO.getId() + " is skipping");
 		}
 		MailArchivesReaderQueueManager.getInstance().initQueue();
 		

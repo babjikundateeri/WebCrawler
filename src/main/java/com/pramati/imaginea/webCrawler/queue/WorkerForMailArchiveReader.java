@@ -22,12 +22,13 @@ public class WorkerForMailArchiveReader implements Callable<MailArchiveDTO> {
 		FileWriter fileWriter = new FileWriter(mailArchiveDTO.getDir(), mailArchiveDTO.getFileName());
 		if (mailArchiveDTO.isCheckForPreExistance() && fileWriter.isFileExists()) {
 			// no need to loading this mail again
+			MailArchivesReaderQueueManager.getInstance().increseOutQueueCtr(true);
 			throw new Exception("File already exists " + mailArchiveDTO.getDir() + File.separator + mailArchiveDTO.getFileName());
 		}
 		
 		URLConnectionReader urlConnectionReader = new URLConnectionReader(mailArchiveDTO.getURL());
 		fileWriter.loadFileContent(urlConnectionReader.getInputStream());
-	
+		MailArchivesReaderQueueManager.getInstance().increseOutQueueCtr(false);
 		return mailArchiveDTO;
 	}
 
