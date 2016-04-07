@@ -119,7 +119,10 @@ public class WorkerThreadForMonthlyArchives implements Callable<MailArchivesMont
 												
 												if (hrefNode.getNodeType() != Node.ATTRIBUTE_NODE) continue;
 												dto.setLink(hrefNode.getNodeValue());
-												dto.setURL(primaryURL + WebCrawlerConstants.SLASH + WebCrawlerConstants.AJAX + WebCrawlerConstants.SLASH + hrefNode.getNodeValue());
+												dto.setURL(WebCrawlerProperties.getMailArchiveURL() 
+														+ WebCrawlerConstants.SLASH + monthlyDTO.getId() + WebCrawlerConstants.MBOX
+														+ WebCrawlerConstants.SLASH + WebCrawlerConstants.AJAX 
+														+ WebCrawlerConstants.SLASH + hrefNode.getNodeValue());
 											}
 										} else if (tdAttribute.getNodeValue().equalsIgnoreCase(WebCrawlerConstants.DATE)) { // date
 											dto.setDate(tdNode.getTextContent());
@@ -128,6 +131,7 @@ public class WorkerThreadForMonthlyArchives implements Callable<MailArchivesMont
 										
 									}
 									dto.setDir(getDirectoryName());
+									dto.setCheckForPreExistance(isDirExists);
 									LOGGER.debug(monthlyDTO.getId() + " " + dto);
 									// add dto to queue
 									MailArchivesReaderQueueManager.getInstance().addQueueEntry(dto);
@@ -145,7 +149,7 @@ public class WorkerThreadForMonthlyArchives implements Callable<MailArchivesMont
 				}
 			} 
 		}
-				
+		MailArchivesReaderQueueManager.getInstance().initQueue();
 		
 		return monthlyDTO;
 	}

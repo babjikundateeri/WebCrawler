@@ -1,41 +1,59 @@
 package com.pramati.imaginea.webCrawler.utils;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.apache.log4j.Logger;
 
 public class FileWriter {
-	private String year;
-	private String month;
-	private String fileName;
-	
 	private static Logger LOGGER = Logger.getLogger(FileWriter.class);
 	
+	private String fileDir;
+	private String fileName;
 	
-	public FileWriter (final String year,
-			final String month,
+	private File file = null;
+	
+	public FileWriter(final String fileDir, 
 			final String fileName) {
-		LOGGER.info("Initializ");
-		this.year = year;
-		this.month = month;
+		this.fileDir = fileDir;
 		this.fileName = fileName;
-		checkDirectory();
+		initFile();
 	}
 	
-	private boolean checkDirectory () {
-		final String dirPath = getDirPath();
-		File dir = new File (dirPath) ;
+	public void initFile () {
+		file = new File (fileDir + File.separator +fileName) ;
+	}
+	
+	public boolean isFileExists() {
+		if (file != null)
+			return file.exists();
 		
-		if (!dir.exists()) {
-			LOGGER.debug("Dir " + dir + " does not exists, creating the dir's");
-			dir.mkdirs();
+		return false;
+	}
+	
+	public boolean loadFileContent(final InputStream inputStream) {
+		OutputStream outputStream = null;
+		try {
+			outputStream = new FileOutputStream(file);
+			int read = 0;
+			byte[] bytes = new byte[1024];
+
+			while ((read = inputStream.read(bytes)) != -1) {
+				outputStream.write(bytes, 0, read);
+			}
+			LOGGER.debug("Writing to file " + fileDir + File.separator + fileName + " is done.");
+		} catch (IOException e) {
+			LOGGER.warn("Failed to write data to " + fileDir + File.separator +  fileName);
+		} finally {
+			if (outputStream != null)
+				try {
+					outputStream.close();
+				} catch (IOException ignore) {
+				}
 		}
-		
 		return true;
-	}
-	
-	private String getDirPath() {
-		//return WebCrawlerProperties.getCurrentDirectory() + File.separator + year + File.separator + month + File.pathSeparator + fileName + WebCrawlerProperties.getFileExtension();
-		return WebCrawlerProperties.getCurrentDirectory() + File.separator + year + File.separator + month ;
 	}
 }

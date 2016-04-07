@@ -8,6 +8,7 @@ public class MailArchiveDTO {
 	private String fileName;
 	private String dir;
 	private String uRL;
+	private boolean checkForPreExistance;
 	public String getLink() {
 		return link;
 	}
@@ -50,10 +51,17 @@ public class MailArchiveDTO {
 	public void setURL(String uRL) {
 		this.uRL = uRL;
 	}
+	public boolean isCheckForPreExistance() {
+		return checkForPreExistance;
+	}
+	public void setCheckForPreExistance(boolean checkForPreExistance) {
+		this.checkForPreExistance = checkForPreExistance;
+	}
 	@Override
 	public String toString() {
 		return "MailArchiveDTO [link=" + link + ", author=" + author + ", subject=" + subject + ", date=" + date
-				+ ", fileName=" + fileName + ", dir=" + dir + ", baseURL=" + baseURL + "]";
+				+ ", fileName=" + fileName + ", dir=" + dir + ", uRL=" + uRL + ", checkForPreExistance="
+				+ checkForPreExistance + "]";
 	}
 	
 }

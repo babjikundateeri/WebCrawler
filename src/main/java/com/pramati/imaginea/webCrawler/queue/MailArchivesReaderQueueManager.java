@@ -12,6 +12,7 @@ public class MailArchivesReaderQueueManager {
 	private static MailArchivesReaderQueueManager me;
 	private volatile Queue<MailArchiveDTO> queue = null;
 	private volatile boolean isQueueStarted = false;
+	private volatile int runningThreadCount = 0;
 	private MailArchivesReaderQueueManager() {
 		queue = new LinkedList<MailArchiveDTO>();
 	}
@@ -43,6 +44,26 @@ public class MailArchivesReaderQueueManager {
 		if (!isQueueStarted) {
 			isQueueStarted = true;
 			ExecutorService service = Executors.newFixedThreadPool(WebCrawlerProperties.getThreadPoolSize());
+			int emptyQeueRunTimes = 0;
+			while (true) {
+				MailArchiveDTO archiveDTO = null;
+				if ( (archiveDTO = pollEntryFromQueue()) != null ) {
+					WorkerForMailArchiveReader worker = new WorkerForMailArchiveReader(archiveDTO);
+					service.submit(worker);
+					emptyQeueRunTimes = 0;
+				} else {
+					if (emptyQeueRunTimes > 3) {
+						break;  // to stop pool run
+					}
+					emptyQeueRunTimes++;
+					try {
+						Thread.sleep(5000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			service.shutdown();
 		}
 	}
 }
