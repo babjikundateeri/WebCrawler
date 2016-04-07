@@ -15,10 +15,11 @@ Welcome to the WebCrawler wiki!
   * folder - It will be the MailArchives folder name, by default it will be maven-users
 
 ex : 
-java -jar WebCrawler.java 2016 Jan,Feb maven-users
+
+* java -jar WebCrawler.java 2016 Jan,Feb maven-users
 
   This Job will run for the archives of maven-users of the year 2016 in the months of January and February
 
-java -jar WebCrawler.java 2014 All incubator-iota-dev
+* java -jar WebCrawler.java 2014 All incubator-iota-dev
 
   This Job will run for the archives of incubator-iota-dev for the year 2014
