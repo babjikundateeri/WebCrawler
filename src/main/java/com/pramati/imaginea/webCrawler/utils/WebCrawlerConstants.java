@@ -21,4 +21,15 @@ public class WebCrawlerConstants {
 	public static final String PAGES = "pages";
 	public static final String AUTHOR = "author";
 	public static final String SUBJECT = "subject";
+	
+	// crawler properties
+	public static final String WebCrawlerResourceFile = "webcrawler.properties";
+	public static final String YEAR = "YEAR";
+	public static final String MONTH = "MONTH";
+	public static final String BASE_URL = "BASE_URL";
+	public static final String QUERY_URL = "QUERY_URL";
+	public static final String MAIN_POOL_SIZE = "MAIN_POOL_SIZE";
+	public static final String MAILS_PER_PAGE = "MAILS_PER_PAGE";
+	public static final String THREAD_POOL_SIZE = "THREAD_POOL_SIZE";
+	public static final String MAX_ALLOWED_THREADS = "MAX_ALLOWED_THREADS";
 }
