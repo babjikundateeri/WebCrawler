@@ -70,13 +70,16 @@ public class MailArchivesReaderQueueManager {
 					WorkerForMailArchiveReader worker = new WorkerForMailArchiveReader(archiveDTO);
 					service.submit(worker);
 					emptyQeueRunTimes = 0;
+				} else if (WebCrawlerQueueManager.getInstance().isServiceShutDown() 
+						&& inQueueCtr <= (outQueueCtr + outSkipCount)) {
+					break;
 				} else {
 					if (emptyQeueRunTimes > 3) {
 						break;  // to stop pool run
 					}
 					emptyQeueRunTimes++;
 					try {
-						Thread.sleep(5000);
+						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}

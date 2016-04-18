@@ -36,6 +36,7 @@ public class WebCrawlerRunner {
 		LOGGER.info("Running Crawler for the Months " + WebCrawlerProperties.getMonth());
 		LOGGER.info("Reading Archives for " + WebCrawlerProperties.getQeueryURL());
 		Collection<MailArchivesMonthlyDTO> mailArchivesMonthlyDTOs = WebCrawlerParser.getMailArchivesMonthlyDTOFromURL(WebCrawlerProperties.getMailArchiveURL());
+		LOGGER.info("Total Months to be check " + mailArchivesMonthlyDTOs.size());
 		if(WebCrawlerQueueManager.getInstance().addMailArchivesMonthlyDTO(mailArchivesMonthlyDTOs)) {
 			WebCrawlerQueueManager.getInstance().initQueue();
 		}

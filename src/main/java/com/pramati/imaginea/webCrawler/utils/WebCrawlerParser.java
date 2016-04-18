@@ -21,7 +21,7 @@ import com.pramati.imaginea.webCrawler.dto.MailArchivesMonthlyDTO;
 public class WebCrawlerParser {
 	private static final Logger LOGGER = Logger.getLogger(WebCrawlerParser.class);
 	public static Collection<MailArchivesMonthlyDTO> getMailArchivesMonthlyDTOFromURL(final String url) {
-		Collection<MailArchivesMonthlyDTO> mailArchivesMonthlyDTOs = null;
+		Collection<MailArchivesMonthlyDTO> mailArchivesMonthlyDTOs = new ArrayList<MailArchivesMonthlyDTO>();
 
 		Document document = null;
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -43,7 +43,7 @@ public class WebCrawlerParser {
 			
 			for (int gridtbodyctr = 0; gridtbodyctr < gridTableTbodayList.getLength(); gridtbodyctr++) {
 				Node gridTableTbody = gridTableTbodayList.item(gridtbodyctr);
-				
+
 				if (gridTableTbody.getNodeType() != Node.ELEMENT_NODE) continue;
 				
 				NodeList gridTableChilds = null;
@@ -61,7 +61,7 @@ public class WebCrawlerParser {
 						if (gridTDNode.getNodeType() == Node.ELEMENT_NODE 
 								&& gridTDNode.getTextContent().contains(WebCrawlerProperties.getYear())
 								&& gridTDNode.hasChildNodes()) {
-							WebCrawlerParser.parseMothTable(gridTDNode);
+							mailArchivesMonthlyDTOs.addAll(WebCrawlerParser.parseMothTable(gridTDNode));
 						}
 					}
 				}

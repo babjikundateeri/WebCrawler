@@ -13,11 +13,13 @@ import com.pramati.imaginea.webCrawler.utils.WebCrawlerProperties;
 public class WebCrawlerQueueManager {
 	private static final Logger LOGGER = Logger.getLogger(WebCrawlerQueueManager.class);
 	private static WebCrawlerQueueManager me;
+	ExecutorService service = null;
 	
 	private volatile Queue<MailArchivesMonthlyDTO> queueInput = null;
 	
 	private WebCrawlerQueueManager() {
 		queueInput = new LinkedList<MailArchivesMonthlyDTO>();
+		service = Executors.newFixedThreadPool(WebCrawlerProperties.getMainPoolSize());
 	}
 	
 	public static WebCrawlerQueueManager getInstance() {
@@ -52,7 +54,6 @@ public class WebCrawlerQueueManager {
 	
 	public void initQueue() {
 		LOGGER.debug("Starting Service");
-		ExecutorService service = Executors.newFixedThreadPool(WebCrawlerProperties.getMainPoolSize());
 		MailArchivesMonthlyDTO dto;
 		while ( (dto = poolEntryFromQueue() ) != null) {
 			WorkerThreadForMonthlyArchives worker = new WorkerThreadForMonthlyArchives(dto);
@@ -62,4 +63,7 @@ public class WebCrawlerQueueManager {
 		service.shutdown();
 	}
 	
+	public boolean isServiceShutDown() {
+		return service.isShutdown();
+	}
 }
