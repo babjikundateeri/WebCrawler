@@ -4,7 +4,6 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
 
@@ -31,7 +30,12 @@ public class WebCrawlerQueueManager {
 		}
 		return me;
 	}
-	
+	public boolean addMailArchivesMonthlyDTO(final java.util.Collection<MailArchivesMonthlyDTO> monthlyDTOs) {
+		if (monthlyDTOs == null || monthlyDTOs.isEmpty()) {
+			return false;
+		}
+		return queueInput.addAll(monthlyDTOs);
+	}
 	public boolean addMailArchivesMonthlyDTO(final MailArchivesMonthlyDTO dto) {
 		if (dto.getLink() != null && !dto.getLink().equalsIgnoreCase(""))
 			return queueInput.add(dto);
