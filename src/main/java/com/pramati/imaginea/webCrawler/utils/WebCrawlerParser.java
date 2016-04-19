@@ -43,7 +43,6 @@ public class WebCrawlerParser {
 			
 			for (int gridtbodyctr = 0; gridtbodyctr < gridTableTbodayList.getLength(); gridtbodyctr++) {
 				Node gridTableTbody = gridTableTbodayList.item(gridtbodyctr);
-
 				if (gridTableTbody.getNodeType() != Node.ELEMENT_NODE) continue;
 				
 				NodeList gridTableChilds = null;
