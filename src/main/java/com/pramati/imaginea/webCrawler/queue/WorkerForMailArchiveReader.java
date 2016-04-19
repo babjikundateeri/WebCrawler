@@ -26,8 +26,7 @@ public class WorkerForMailArchiveReader implements Callable<MailArchiveDTO> {
 			throw new Exception("File already exists " + mailArchiveDTO.getDir() + File.separator + mailArchiveDTO.getFileName());
 		}
 		
-		URLConnectionReader urlConnectionReader = new URLConnectionReader(mailArchiveDTO.getURL());
-		fileWriter.loadFileContent(urlConnectionReader.getInputStream());
+		fileWriter.loadFileContent(URLConnectionReader.getInputStream(mailArchiveDTO.getURL()));
 		MailArchivesReaderQueueManager.getInstance().increseOutQueueCtr(false);
 		return mailArchiveDTO;
 	}

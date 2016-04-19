@@ -2,12 +2,14 @@ package com.pramati.imaginea.webCrawler.queue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.concurrent.Callable;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.pramati.imaginea.webCrawler.utils.WebCrawlerParser;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -42,135 +44,12 @@ public class WorkerThreadForMonthlyArchives implements Callable<MailArchivesMont
 	 */
 	public MailArchivesMonthlyDTO call() throws Exception {
 		LOGGER.debug(monthlyDTO.getId() + " Proecessing for " + monthlyDTO.getMonth());
-		boolean isDirExists = checkForDirectoryExistance(getDirectoryName()) ;
-		LOGGER.debug(monthlyDTO.getId() + " isDirExists " +  getDirectoryName() + " / " +isDirExists);
-		int noOfPriviousFiles = 0;
-		File[] filesInDir = null;
-		if (isDirExists) {
-			File dir = new File(getDirectoryName());
-			filesInDir = dir.listFiles();
-			noOfPriviousFiles = filesInDir.length;
-		}
-
-		LOGGER.info(monthlyDTO.getId() + "  Mails in local / Mails in Server  :: " + noOfPriviousFiles + " / " + monthlyDTO.getMsgCount());
-		if (noOfPriviousFiles < monthlyDTO.getMsgCount()) {
-			// have different pages
-			LOGGER.info(monthlyDTO.getId() + " is going forward");
-			String primaryURL =  WebCrawlerProperties.getMailArchiveURL() + File.separator + monthlyDTO.getLink();
-			
-			int numberOfPages = (monthlyDTO.getMsgCount() / WebCrawlerProperties.getMailsPerPage() );
-			
-			int pageNumber = 0;
-			while (pageNumber <= numberOfPages) {
-				
-				final String url = primaryURL + "?" + pageNumber++; 
-				URLConnectionReader urlReader = new URLConnectionReader(url);
-				
-				// need to collect page numbers and links to the mails
-				Document document = null;
-				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-				try {
-					DocumentBuilder builder = factory.newDocumentBuilder();
-					document = builder.parse(urlReader.getInputStream());
-					
-					Element msgListTable = document.getElementById(WebCrawlerConstants.MSGLIST);
-					
-					if (msgListTable != null && msgListTable.hasChildNodes()) {
-						NodeList tableChildsList = msgListTable.getChildNodes();
-						
-						for (int tblChildctr = 0; tblChildctr < tableChildsList.getLength(); tblChildctr++) {
-							Node tableChildNode = tableChildsList.item(tblChildctr);
-							if (tableChildNode.getNodeType() == Node.ELEMENT_NODE  && tableChildNode.hasChildNodes()
-									&& tableChildNode.getNodeName().equalsIgnoreCase(WebCrawlerConstants.TBODY) ) {
-
-								NodeList theadChildNodeList = tableChildNode.getChildNodes();
-								
-								for (int trctr = 0; trctr < theadChildNodeList.getLength(); trctr++) {
-									
-									Node trNode = theadChildNodeList.item(trctr);
-									NodeList tdNodeList = null;
-									if (trNode.getNodeType() != Node.ELEMENT_NODE || !trNode.hasChildNodes()) {
-										continue;
-									}
-									
-									MailArchiveDTO dto = new MailArchiveDTO();
-									
-									tdNodeList = trNode.getChildNodes();
-									
-									for (int tdctr = 0; tdctr < tdNodeList.getLength(); tdctr++) {
-										Node tdNode = tdNodeList.item(tdctr);
-										if (tdNode.getNodeType() != Node.ELEMENT_NODE) continue;
-										
-										NamedNodeMap tdAttributes = tdNode.getAttributes();
-										Node tdAttribute = tdAttributes.getNamedItem(WebCrawlerConstants.CLASS);
-										LOGGER.debug(monthlyDTO.getId() + " " + tdAttribute.getNodeValue() );
-										if (tdAttribute.getNodeValue().equalsIgnoreCase(WebCrawlerConstants.AUTHOR)) { // author
-											dto.setAuthor(tdNode.getTextContent());
-										} else if (tdAttribute.getNodeValue().equalsIgnoreCase(WebCrawlerConstants.SUBJECT)
-												 && tdNode.hasChildNodes()) {  // subject
-											NodeList aNodesList = tdNode.getChildNodes();
-											
-											for (int aNodeCtr = 0; aNodeCtr < aNodesList.getLength(); aNodeCtr++) {
-												Node aNode = aNodesList.item(aNodeCtr);
-												
-												if (aNode.getNodeType() != Node.ELEMENT_NODE || !aNode.getNodeName().equalsIgnoreCase(WebCrawlerConstants.A)) continue;
-												
-												NamedNodeMap aAttributes = aNode.getAttributes();
-												Node hrefNode = aAttributes.getNamedItem(WebCrawlerConstants.HREF);
-												
-												if (hrefNode.getNodeType() != Node.ATTRIBUTE_NODE) continue;
-												dto.setLink(hrefNode.getNodeValue());
-												dto.setURL(WebCrawlerProperties.getMailArchiveURL() 
-														+ WebCrawlerConstants.SLASH + monthlyDTO.getId() + WebCrawlerConstants.MBOX
-														+ WebCrawlerConstants.SLASH + WebCrawlerConstants.AJAX 
-														+ WebCrawlerConstants.SLASH + hrefNode.getNodeValue());
-											}
-										} else if (tdAttribute.getNodeValue().equalsIgnoreCase(WebCrawlerConstants.DATE)) { // date
-											dto.setDate(tdNode.getTextContent());
-											dto.setFileName(tdNode.getTextContent() + WebCrawlerProperties.getFileExtension());
-										}
-										
-									}
-									dto.setDir(getDirectoryName());
-									dto.setCheckForPreExistance(isDirExists);
-									LOGGER.debug(monthlyDTO.getId() + " " + dto);
-									// add dto to queue
-									MailArchivesReaderQueueManager.getInstance().addQueueEntry(dto);
-								}
-							}
-						}
-						
-					}
-				} catch (ParserConfigurationException e) {
-					LOGGER.warn(e.getMessage());
-				} catch (SAXException e) {
-					LOGGER.warn(e.getMessage());
-				} catch (IOException e) {
-					LOGGER.warn(e.getMessage());
-				}
-			} 
-		} else {
-			LOGGER.info(monthlyDTO.getId() + " is skipping");
-		}
+		Collection<MailArchiveDTO> mailArchiveDTOs = WebCrawlerParser.parseMonthlyData(monthlyDTO);
+		LOGGER.info(monthlyDTO.getId() + "  entries " + mailArchiveDTOs.size());
+		MailArchivesReaderQueueManager.getInstance().addQueueEntry(mailArchiveDTOs);
 		MailArchivesReaderQueueManager.getInstance().initQueue();
-		
 		return monthlyDTO;
 	}
 	
-	public boolean checkForDirectoryExistance(final String dirPath) {
-		boolean isExists = true;
-		
-		File dir = new File(dirPath);
-		if (!dir.exists()) {
-			isExists = false;
-			dir.mkdirs();
-		}
-		return isExists;
-	}
 
-	private String getDirectoryName () {
-		return WebCrawlerProperties.getCurrentDirectory() + File.separator + WebCrawlerProperties.getQeueryURL() 
-														  + File.separator + monthlyDTO.getYear()
-														  + File.separator + monthlyDTO.getId() + WebCrawlerConstants.MBOX;
-	}
 }

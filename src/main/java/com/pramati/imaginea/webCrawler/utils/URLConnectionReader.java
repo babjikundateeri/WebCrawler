@@ -12,32 +12,31 @@ import org.apache.log4j.Logger;
 
 public class URLConnectionReader {
 	private static Logger LOGGER = Logger.getLogger(URLConnectionReader.class);
-	URL url = null;
-	URLConnection urlConnection = null;
-	public URLConnectionReader (final String urlStr) {
+
+
+	public static InputStream getInputStream(final String urlStr) throws IOException {
+		URL url = null;
+		URLConnection urlConnection = null;
 		try {
 			url = new URL(urlStr);
 			urlConnection = url.openConnection();
 		} catch (MalformedURLException e) {
 			LOGGER.warn("Unable to read from URL " + urlStr, e);
-			e.printStackTrace();
+			return null;
 		} catch (IOException e) {
 			LOGGER.warn("Unable to Connect to " + urlStr, e);
-			e.printStackTrace();
+			return null;
 		}
 		LOGGER.debug("Connection done for " + urlStr);
-		
+		return  urlConnection.getInputStream();
 	}
-	
-	public InputStream getInputStream() throws IOException {
-		return urlConnection.getInputStream();
-	}
-	
-	public String getContent() {
+
+	public static String getContent(final String urlStr) {
+
 		BufferedReader reader = null;
 		StringBuilder urlContent = null;
 		try {
-			reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+			reader = new BufferedReader(new InputStreamReader(getInputStream(urlStr)));
 			urlContent = new StringBuilder();
 			String line;
 			while ((line = reader.readLine()) != null) {
@@ -45,7 +44,7 @@ public class URLConnectionReader {
 			}
 			
 		} catch (IOException e) {
-			LOGGER.warn("Unable to reade data from " + url.toString(), e);
+			LOGGER.warn("Unable to reade data from " + urlStr, e);
 		}	
 		
 		return urlContent.toString();

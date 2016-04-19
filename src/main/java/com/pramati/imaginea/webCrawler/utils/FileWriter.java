@@ -23,22 +23,19 @@ public class FileWriter {
 		initFile();
 	}
 	
-	public void initFile () {
+	private void initFile () {
 		file = new File (fileDir + File.separator +fileName) ;
 	}
 	
 	public boolean isFileExists() {
-		if (file != null)
-			return file.exists();
-		
-		return false;
+		return file != null && file.exists();
 	}
 	
 	public boolean loadFileContent(final InputStream inputStream) {
 		OutputStream outputStream = null;
 		try {
 			outputStream = new FileOutputStream(file);
-			int read = 0;
+			int read;
 			byte[] bytes = new byte[1024];
 
 			while ((read = inputStream.read(bytes)) != -1) {
