@@ -6,12 +6,14 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Properties;
 
 /**
  * Created by babjik on 29/4/16.
  */
-public class TestCases {
+public class FileWriterTest {
 
     @Test
     public void testcase() {
@@ -36,5 +38,14 @@ public class TestCases {
         }
 
         assert (!properties.isEmpty());
+    }
+
+    @Test
+    public void testPropertiesWithOutResourceStream() throws URISyntaxException {
+        URI uri = Thread.currentThread().getContextClassLoader().getResource("webcrawler_test.properties").toURI();
+        System.out.println(uri.getPath());
+        File f = new File(uri);
+        System.out.println("file exits :: " + f.exists());
+        assert (f.exists());
     }
 }

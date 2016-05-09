@@ -13,7 +13,8 @@ import com.pramati.imaginea.webCrawler.utils.WebCrawlerProperties;
 public class WebCrawlerRunner {
 	private static Logger LOGGER  = Logger.getLogger(WebCrawlerRunner.class);
 	private String[] input = null;
-	public WebCrawlerRunner(final String[] input) throws WebCrawlerRunnerException {
+	private WebCrawlerParser parser = null;
+	public WebCrawlerRunner(final String[] input, WebCrawlerParser parser) throws WebCrawlerRunnerException {
 		this.input = input;
 		if (input.length > 0) {
 			try  {
@@ -30,12 +31,13 @@ public class WebCrawlerRunner {
 		if (input.length > 2) { // adding archives folder name in options
 			WebCrawlerProperties.setQueryURL(input[2]);
 		}
+		this.parser = parser;
 	}
 	public void runWebCrawler() {
 		LOGGER.info("Running Crawler for the year " + WebCrawlerProperties.getYear());
 		LOGGER.info("Running Crawler for the Months " + WebCrawlerProperties.getMonth());
 		LOGGER.info("Reading Archives for " + WebCrawlerProperties.getQeueryURL());
-		Collection<MailArchivesMonthlyDTO> mailArchivesMonthlyDTOs = WebCrawlerParser.getMailArchivesMonthlyDTOFromURL(WebCrawlerProperties.getMailArchiveURL());
+		Collection<MailArchivesMonthlyDTO> mailArchivesMonthlyDTOs = parser.getMailArchivesMonthlyDTOFromURL(WebCrawlerProperties.getMailArchiveURL());
 		LOGGER.info("Total Months to be check " + mailArchivesMonthlyDTOs.size());
 		if(WebCrawlerQueueManager.getInstance().addMailArchivesMonthlyDTO(mailArchivesMonthlyDTOs)) {
 			WebCrawlerQueueManager.getInstance().initQueue();

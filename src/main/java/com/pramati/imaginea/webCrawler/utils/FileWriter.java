@@ -15,15 +15,31 @@ public class FileWriter {
 	private String fileName;
 	
 	private File file = null;
-	
-	public FileWriter(final String fileDir, 
-			final String fileName) {
+
+	public FileWriter() {
+
+	}
+
+	public void setFileDir(String fileDir) {
+		this.fileDir = fileDir;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+	public void setFile(File file) {
+		this.file = file;
+	}
+
+	public FileWriter(final String fileDir,
+					  final String fileName) {
 		this.fileDir = fileDir;
 		this.fileName = fileName;
 		initFile();
 	}
 	
-	private void initFile () {
+	public void initFile () {
 		file = new File (fileDir + File.separator +fileName) ;
 	}
 	

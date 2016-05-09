@@ -7,6 +7,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.pramati.imaginea.webCrawler.dto.MailArchiveDTO;
+import com.pramati.imaginea.webCrawler.utils.FileWriter;
+import com.pramati.imaginea.webCrawler.utils.URLConnectionReader;
 import com.pramati.imaginea.webCrawler.utils.WebCrawlerProperties;
 import org.apache.log4j.Logger;
 
@@ -19,10 +21,16 @@ public class MailArchivesReaderQueueManager {
 	private volatile int inQueueCtr = 0;
 	private volatile int outQueueCtr = 0;
 	private volatile int outSkipCount = 0;
+	private URLConnectionReader urlConnectionReader;
+
 	private MailArchivesReaderQueueManager() {
 		queue = new LinkedList<MailArchiveDTO>();
 	}
-	
+
+	public void setUrlConnectionReader(URLConnectionReader urlConnectionReader) {
+		this.urlConnectionReader = urlConnectionReader;
+	}
+
 	public static MailArchivesReaderQueueManager getInstance() {
 		if (me == null) {
 			synchronized (MailArchivesReaderQueueManager.class) {
@@ -78,18 +86,12 @@ public class MailArchivesReaderQueueManager {
 			ExecutorService service = Executors.newFixedThreadPool(WebCrawlerProperties.getThreadPoolSize());
 			int emptyQeueRunTimes = 0;
 			while (true) {
-//				System.out.print("\r Queue Status - In [" + inQueueCtr + "] / Processed [" + outQueueCtr + "] / Skipped [" + outSkipCount + "]  ");
 				MailArchiveDTO archiveDTO = null;
 				if ( (archiveDTO = pollEntryFromQueue()) != null ) {
-					WorkerForMailArchiveReader worker = new WorkerForMailArchiveReader(archiveDTO);
+					WorkerForMailArchiveReader worker = new WorkerForMailArchiveReader(urlConnectionReader, archiveDTO);
 					service.submit(worker);
 					emptyQeueRunTimes = 0;
-				} /*else if (WebCrawlerQueueManager.getInstance().isServiceShutDown()
-						&& inQueueCtr <= (outQueueCtr + outSkipCount)) {
-					LOGGER.warn(" inQueueCtr <= (outQueueCtr + outSkipCount) :: " + inQueueCtr + "<= ("+ outQueueCtr + " + " + outSkipCount + ")");
-					LOGGER.warn("Meet condition WebCrawlerQueueManager.getInstance().isServiceShutDown() && inQueueCtr <= (outQueueCtr + outSkipCount");
-					break;
-				} */else {
+				} else {
 					if (emptyQeueRunTimes > 3) {
 						break;  // to stop pool run
 					}

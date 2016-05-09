@@ -37,9 +37,9 @@
         <configuration>
           <archive>
             <manifest>
-		<addClasspath>true</addClasspath>
-		<mainClass>com.pramati.imaginea.webCrawler.WebCrawler</mainClass>
-	    </manifest>
+		        <addClasspath>true</addClasspath>
+		        <mainClass>com.pramati.imaginea.webCrawler.WebCrawler</mainClass>
+	        </manifest>
           </archive>
         </configuration>
       </plugin>
@@ -70,7 +70,18 @@
 			</goals>
 		  </execution>
 		</executions>
-	</plugin>
+      </plugin>
     </plugins>
+
+      <resources>
+          <resource>
+              <directory>src/main/resources</directory>
+              <filtering>true</filtering>
+          </resource>
+          <resource>
+              <directory>src/test/resources</directory>
+              <filtering>true</filtering>
+          </resource>
+      </resources>
   </build>
 </project>

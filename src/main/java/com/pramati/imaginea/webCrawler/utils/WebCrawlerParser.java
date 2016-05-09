@@ -22,7 +22,12 @@ import com.pramati.imaginea.webCrawler.dto.MailArchivesMonthlyDTO;
 
 public class WebCrawlerParser {
 	private static final Logger LOGGER = Logger.getLogger(WebCrawlerParser.class);
-	public static Collection<MailArchivesMonthlyDTO> getMailArchivesMonthlyDTOFromURL(final String url) {
+	private URLConnectionReader urlConnectionReader;
+	public WebCrawlerParser(URLConnectionReader urlConnectionReader) {
+		this.urlConnectionReader = urlConnectionReader;
+	}
+
+	public Collection<MailArchivesMonthlyDTO> getMailArchivesMonthlyDTOFromURL(final String url) {
 		Collection<MailArchivesMonthlyDTO> mailArchivesMonthlyDTOs = new ArrayList<MailArchivesMonthlyDTO>();
 
 		Document document;
@@ -31,7 +36,7 @@ public class WebCrawlerParser {
 		try {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			LOGGER.debug("After builder loading..");
-			document = builder.parse(URLConnectionReader.getInputStream(url));
+			document = builder.parse(urlConnectionReader.getInputStream(url));
 			LOGGER.debug("Got the Document element");
 			
 			Element gridElement = document.getElementById(WebCrawlerConstants.GRID);
@@ -63,7 +68,7 @@ public class WebCrawlerParser {
                             if (gridTDNode.getNodeType() == Node.ELEMENT_NODE
                                     && gridTDNode.getTextContent().contains(WebCrawlerProperties.getYear())
                                     && gridTDNode.hasChildNodes()) {
-                                mailArchivesMonthlyDTOs.addAll(WebCrawlerParser.parseMothTable(gridTDNode));
+                                mailArchivesMonthlyDTOs.addAll(parseMothTable(gridTDNode));
                             }
                         }
                     }
@@ -79,7 +84,7 @@ public class WebCrawlerParser {
 		}
 		return mailArchivesMonthlyDTOs;
 	}
-	public static Collection<MailArchivesMonthlyDTO> parseMothTable(Node tableNode) {
+	public Collection<MailArchivesMonthlyDTO> parseMothTable(Node tableNode) {
 		Collection<MailArchivesMonthlyDTO> mailArchivesMonthlyDTOs = new ArrayList<MailArchivesMonthlyDTO>(); 
 		NodeList tableChilds = tableNode.getChildNodes();
 		for (int i = 0; i < tableChilds.getLength(); i++) {
@@ -149,7 +154,7 @@ public class WebCrawlerParser {
 		return mailArchivesMonthlyDTOs;
 	}
 
-	public static Collection<MailArchiveDTO> parseMonthlyData(final MailArchivesMonthlyDTO monthlyDTO) {
+	public Collection<MailArchiveDTO> parseMonthlyData(final MailArchivesMonthlyDTO monthlyDTO) {
 		Collection<MailArchiveDTO> mailArchiveDTOs = new ArrayList<MailArchiveDTO>();
 		final  String dirName = getDirectoryName(monthlyDTO);
 		boolean isDirExists = checkForDirectoryExistance(dirName) ;
@@ -180,7 +185,7 @@ public class WebCrawlerParser {
 				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 				try {
 					DocumentBuilder builder = factory.newDocumentBuilder();
-					document = builder.parse(URLConnectionReader.getInputStream(url));
+					document = builder.parse(urlConnectionReader.getInputStream(url));
 
 					Element msgListTable = document.getElementById(WebCrawlerConstants.MSGLIST);
 

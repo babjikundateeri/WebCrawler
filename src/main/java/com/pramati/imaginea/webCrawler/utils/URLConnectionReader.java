@@ -14,7 +14,7 @@ public class URLConnectionReader {
 	private static Logger LOGGER = Logger.getLogger(URLConnectionReader.class);
 
 
-	public static InputStream getInputStream(final String urlStr) throws IOException {
+	public InputStream getInputStream(final String urlStr) throws IOException {
 		URL url = null;
 		URLConnection urlConnection = null;
 		try {
@@ -31,7 +31,7 @@ public class URLConnectionReader {
 		return  urlConnection.getInputStream();
 	}
 
-	public static String getContent(final String urlStr) {
+	public String getContent(final String urlStr) {
 
 		BufferedReader reader = null;
 		StringBuilder urlContent = null;

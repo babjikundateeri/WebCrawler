@@ -29,8 +29,11 @@ public class WorkerThreadForMonthlyArchives implements Callable<MailArchivesMont
 	private final static Logger LOGGER = Logger.getLogger(WorkerThreadForMonthlyArchives.class);
 
 	private MailArchivesMonthlyDTO monthlyDTO;
+
+	private WebCrawlerParser parser;
 	
-	public WorkerThreadForMonthlyArchives (MailArchivesMonthlyDTO monthlyDTO) {
+	public WorkerThreadForMonthlyArchives (WebCrawlerParser parser, MailArchivesMonthlyDTO monthlyDTO) {
+		this.parser = parser;
 		this.monthlyDTO = monthlyDTO;
 	}
 	
@@ -44,8 +47,8 @@ public class WorkerThreadForMonthlyArchives implements Callable<MailArchivesMont
 	 */
 	public MailArchivesMonthlyDTO call() throws Exception {
 		LOGGER.debug(monthlyDTO.getId() + " Proecessing for " + monthlyDTO.getMonth());
-		Collection<MailArchiveDTO> mailArchiveDTOs = WebCrawlerParser.parseMonthlyData(monthlyDTO);
-		LOGGER.info(monthlyDTO.getId() + "  entries " + mailArchiveDTOs.size());
+		Collection<MailArchiveDTO> mailArchiveDTOs = parser.parseMonthlyData(monthlyDTO);
+		LOGGER.debug(monthlyDTO.getId() + "  entries " + mailArchiveDTOs.size());
 		MailArchivesReaderQueueManager.getInstance().addQueueEntry(mailArchiveDTOs);
 		MailArchivesReaderQueueManager.getInstance().initQueue();
 		return monthlyDTO;

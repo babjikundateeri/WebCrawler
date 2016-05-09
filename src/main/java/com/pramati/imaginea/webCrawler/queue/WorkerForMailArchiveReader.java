@@ -12,21 +12,26 @@ import com.pramati.imaginea.webCrawler.utils.URLConnectionReader;
 public class WorkerForMailArchiveReader implements Callable<MailArchiveDTO> {
 	private static final Logger LOGGER = Logger.getLogger(WorkerForMailArchiveReader.class);
 	private MailArchiveDTO mailArchiveDTO;
-	
-	public WorkerForMailArchiveReader (final MailArchiveDTO mailArchiveDTO) {
+	private URLConnectionReader urlConnectionReader;
+
+	public WorkerForMailArchiveReader (URLConnectionReader urlConnectionReader, final MailArchiveDTO mailArchiveDTO) {
+		this.urlConnectionReader = urlConnectionReader;
 		this.mailArchiveDTO = mailArchiveDTO;
 	}
 	
 	public MailArchiveDTO call() throws Exception {
 		LOGGER.debug("Starting processing for " + mailArchiveDTO.getFileName());
-		FileWriter fileWriter = new FileWriter(mailArchiveDTO.getDir(), mailArchiveDTO.getFileName());
+		FileWriter fileWriter = new FileWriter();
+		fileWriter.setFileDir(mailArchiveDTO.getDir());
+		fileWriter.setFileName(mailArchiveDTO.getFileName());
+		fileWriter.initFile();
 		if (mailArchiveDTO.isCheckForPreExistance() && fileWriter.isFileExists()) {
 			// no need to loading this mail again
 			MailArchivesReaderQueueManager.getInstance().increseOutQueueCtr(true);
 			throw new Exception("File already exists " + mailArchiveDTO.getDir() + File.separator + mailArchiveDTO.getFileName());
 		}
 		
-		fileWriter.loadFileContent(URLConnectionReader.getInputStream(mailArchiveDTO.getURL()));
+		fileWriter.loadFileContent(urlConnectionReader.getInputStream(mailArchiveDTO.getURL()));
 		MailArchivesReaderQueueManager.getInstance().increseOutQueueCtr(false);
 		return mailArchiveDTO;
 	}
